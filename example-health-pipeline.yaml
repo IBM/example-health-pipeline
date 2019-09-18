@@ -1,0 +1,67 @@
+apiVersion: tekton.dev/v1alpha1
+kind: Pipeline
+metadata:
+  name: example-health-pipeline
+spec:
+  resources:
+  - name: patientui-git
+    type: git
+  - name: patientui-image
+    type: image
+  - name: adminui-git
+    type: git
+  - name: adminui-image
+    type: image
+  tasks:
+  - name: build-patientui
+    taskRef:
+      name: s2i-nodejs
+    params:
+      - name: TLSVERIFY
+        value: "false"
+      - name: PATH_CONTEXT
+        value: "./site"
+    resources:
+      inputs:
+      - name: source
+        resource: patientui-git
+      outputs:
+      - name: image
+        resource: patientui-image
+  - name: build-adminui
+    taskRef:
+      name: s2i-php
+    params:
+      - name: TLSVERIFY
+        value: "false"
+      - name: PATH_CONTEXT
+        value: "./src"
+    resources:
+      inputs:
+      - name: source
+        resource: adminui-git
+      outputs:
+      - name: image
+        resource: adminui-image
+  - name: deploy-patientui
+    taskRef:
+      name: openshift-client
+    runAfter:
+      - build-patientui
+    params:
+    - name: ARGS
+      value: "new-app patientui"
+  - name: deploy-ol
+    taskRef:
+      name: openshift-client
+    params:
+    - name: ARGS
+      value: "new-app ykoyfman/ol-example-health"
+  - name: deploy-adminui
+    taskRef:
+      name: openshift-client
+    runAfter:
+      - build-adminui
+    params:
+    - name: ARGS
+      value: "new-app adminui"

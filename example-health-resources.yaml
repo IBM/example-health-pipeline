@@ -1,0 +1,40 @@
+---
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineResource
+metadata:
+  name: patientui-image
+spec:
+  type: image
+  params:
+  - name: url
+    value: docker-registry.default.svc:5000/tekton-pipelines/patientui
+---
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineResource
+metadata:
+  name: patientui-git
+spec:
+  type: git
+  params:
+  - name: url
+    value: https://github.com/IBM/node-s2i-openshift.git
+---
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineResource
+metadata:
+  name: adminui-image
+spec:
+  type: image
+  params:
+  - name: url
+    value: docker-registry.default.svc:5000/tekton-pipelines/adminui
+---
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineResource
+metadata:
+  name: adminui-git
+spec:
+  type: git
+  params:
+  - name: url
+    value: https://github.com/IBM/php-s2i-openshift.git
