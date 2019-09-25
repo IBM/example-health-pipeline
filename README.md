@@ -7,14 +7,17 @@ Example Health is a demo app the folks in my group created along with some other
 ## Prerequisties
 
 OpenShift cluster
+
 kubectl
+
 oc
 
 ## Steps
 
-1. Install Teckton, Dashboard, and extensions
-2. apply base pipeline and run
-3. optional analytics
+1. Target your cluster
+2. Install Teckton, Dashboard, and extensions
+3. Create service account
+4. Apply resources, pipeline and run
 
 ### 1. Target your cluster
 
