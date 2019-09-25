@@ -12,6 +12,12 @@ spec:
     type: git
   - name: adminui-image
     type: image
+  - name: analytics-git
+    type: git
+  - name: analytics-dataservice-image
+    type: image
+  - name: analytics-webapp-image
+    type: image
   tasks:
   - name: build-patientui
     taskRef:
@@ -43,6 +49,36 @@ spec:
       outputs:
       - name: image
         resource: adminui-image
+  - name: build-analytics-dataservice
+    taskRef:
+      name: s2i-nodejs
+    params:
+      - name: TLSVERIFY
+        value: "false"
+      - name: PATH_CONTEXT
+        value: "./data-service"
+    resources:
+      inputs:
+      - name: source
+        resource: analytics-git
+      outputs:
+      - name: image
+        resource: analytics-dataservice-image
+  - name: build-analytics-webapp
+    taskRef:
+      name: s2i-nodejs
+    params:
+      - name: TLSVERIFY
+        value: "false"
+      - name: PATH_CONTEXT
+        value: "./web"
+    resources:
+      inputs:
+      - name: source
+        resource: analytics-git
+      outputs:
+      - name: image
+        resource: analytics-webapp-image
   - name: deploy-patientui
     taskRef:
       name: openshift-client
@@ -65,3 +101,20 @@ spec:
     params:
     - name: ARGS
       value: "new-app adminui"
+  - name: deploy-analytics-dataservice
+    taskRef:
+      name: openshift-client
+    runAfter:
+      - build-analytics-dataservice
+    params:
+    - name: ARGS
+      value: "new-app analytics-datasource"
+  - name: deploy-analytics-webapp
+    taskRef:
+      name: openshift-client
+    runAfter:
+      - build-analytics-webapp
+    params:
+    - name: ARGS
+      value: "new-app analytics-webapp"
+

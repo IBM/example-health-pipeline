@@ -38,3 +38,33 @@ spec:
   params:
   - name: url
     value: https://github.com/IBM/php-s2i-openshift.git
+---
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineResource
+metadata:
+  name: analytics-git
+spec:
+  type: git
+  params:
+  - name: url
+    value: https://github.com/IBM/example-health-analytics.git
+---
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineResource
+metadata:
+  name: analytics-dataservice-image
+spec:
+  type: image
+  params:
+  - name: url
+    value: docker-registry.default.svc:5000/tekton-pipelines/analytics-dataservice
+---
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineResource
+metadata:
+  name: analytics-webapp-image
+spec:
+  type: image
+  params:
+  - name: url
+    value: docker-registry.default.svc:5000/tekton-pipelines/analytics-webapp
