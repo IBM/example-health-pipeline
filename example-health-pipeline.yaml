@@ -117,4 +117,35 @@ spec:
     params:
     - name: ARGS
       value: "new-app analytics-webapp"
-
+  - name: expose-patientui
+    taskRef:
+      name: openshift-client
+    runAfter:
+      - deploy-patientui
+    params:
+    - name: ARGS
+      value: "expose svc/patientui"
+  - name: expose-adminui
+    taskRef:
+      name: openshift-client
+    runAfter:
+      - deploy-adminui
+    params:
+    - name: ARGS
+      value: "expose svc/adminui"
+  - name: expose-analytics-dataservice
+    taskRef:
+      name: openshift-client
+    runAfter:
+      - deploy-analytics-dataservice
+    params:
+    - name: ARGS
+      value: "expose svc/analytics-dataservice --port=3000"
+  - name: expose-analytics-webapp
+    taskRef:
+      name: openshift-client
+    runAfter:
+      - deploy-analytics-webapp
+    params:
+    - name: ARGS
+      value: "expose svc/analytics-webapp --port=4000"
