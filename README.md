@@ -52,4 +52,8 @@ $ kubectl apply -f example-health-resources
 $ kubectl apply -f example-health-pipeline
 ```
 
-You can then use the tekton dashboard to run your pipeline by selecting the **Example Health Pipeline** from the list of pipelines and then clicking the **Create Pipeline Run** button in the upper right.
+You can then use the tekton dashboard to run your pipeline by selecting the **Example Health Pipeline** from the list of pipelines and then clicking the **Create Pipeline Run** button in the upper right. 
+
+Once created, you can follow along with the progress of your pipeline run.  Success looks similar to:
+
+![success](./images/example-health-tekton-success.png)
