@@ -108,7 +108,7 @@ spec:
       - build-analytics-dataservice
     params:
     - name: ARGS
-      value: "new-app analytics-datasource"
+      value: "new-app analytics-dataservice"
   - name: deploy-analytics-webapp
     taskRef:
       name: openshift-client
