@@ -57,3 +57,7 @@ You can then use the tekton dashboard to run your pipeline by selecting the **Ex
 Once created, you can follow along with the progress of your pipeline run.  Success looks similar to:
 
 ![success](./images/example-health-tekton-success.png)
+
+Back in your web console, you can see the URLs for your applications listed in the overview:
+
+![routes](./images/example-health-routes.png)

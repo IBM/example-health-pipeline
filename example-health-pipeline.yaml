@@ -72,6 +72,11 @@ spec:
         value: "false"
       - name: PATH_CONTEXT
         value: "./web"
+    env:
+      - name: DATA_SERVER
+        value: "http://analytics-dataservice-tekton-pipelines.olaph-iro5-5290c8c8e5797924dc1ad5d1b85b37c0-0001.us-east.containers.appdomain.cloud"
+      - name: MAPBOX_ACCESS_TOKEN
+        value: "pk.eyJ1IjoibWFnaWNtYXgzMiIsImEiOiJjanR0MGxubXcweHVzNDVwaWV2MGQ1ZWp3In0.8YiTJ8uuaq831eLcsjc03w"
     resources:
       inputs:
       - name: source
@@ -140,7 +145,7 @@ spec:
       - deploy-analytics-dataservice
     params:
     - name: ARGS
-      value: "expose svc/analytics-dataservice --port=3000"
+      value: "expose svc/analytics-dataservice --port=3000 --protocol=TCP"
   - name: expose-analytics-webapp
     taskRef:
       name: openshift-client
@@ -148,4 +153,4 @@ spec:
       - deploy-analytics-webapp
     params:
     - name: ARGS
-      value: "expose svc/analytics-webapp --port=4000"
+      value: "expose svc/analytics-webapp --port=4000 --protocol=TCP"
