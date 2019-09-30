@@ -2,7 +2,7 @@
 
 ## Background
 
-Example Health is a demo app the folks in my group created along with some other folks from the z/OS group.  Initally, it was meant to demonstrate app moderization, but evolved over time to also include analytic capibilities.  Currently, five different images constitute the Example Health app, and we have them all deployed into a single Red Hat OpenShift on IBM Cloud cluster, but anytime the app needs to be deployed in a new cluster the install can take a bit of time.  Thus, the impitus for this project - a tekton pipeline to deploy them all!
+Example Health is a demo app the folks in my group created along with some other folks from the z/OS group.  Initally, it was meant to demonstrate app moderization, but evolved over time to also include analytic capibilities.  Currently, five different images constitute the Example Health app, and we have them all deployed into a single Red Hat OpenShift on IBM Cloud cluster, but anytime the app needs to be deployed in a new cluster the install can take a bit of time.  Thus, the impitus for this project - a tekton pipeline to deploy them all!  Using Tekton has reduced deployment time from 45 minutes of clicking around and configuring down to execution of a few commands and waiting for about 15 minutes.
 
 ![example-health](./images/example-health.png)
 
@@ -40,6 +40,9 @@ $ kubectl apply --filename https://storage.googleapis.com/tekton-releases/webhoo
 ```
 
 ### 3. Create service account
+
+To make sure the pipeline has the appropriate permissions to store images in the local OpenShift registry, we need to create a service account.  We'll call it 'pipeline':
+
 ```
 $ oc create serviceaccount pipeline
 $ oc adm policy add-scc-to-user privileged -z pipeline
@@ -47,6 +50,9 @@ $ oc adm policy add-role-to-user edit -z pipeline
 ```
 
 ### 4. Apply resources, pipeline and run
+
+Now we just need to apply a couple of files to the cluster.  The first, 'example-health-resources' defines the location of the github repositories and the names we will use for the images we create as they are stored in the registry.  As you can probably guess, the `example-health-pipeline` files defines all the steps of our pipeline: building, deploying and exposing our images.
+
 ```
 $ git clone https://github.com/loafyloaf/example-health-pipeline.git
 $ cd example-health-pipeline
