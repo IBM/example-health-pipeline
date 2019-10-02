@@ -1,4 +1,4 @@
-# example-health-pipeline
+# Using Tekton Pipelines with Red Hat OpenShift on IBM Cloud
 
 ## Background
 
