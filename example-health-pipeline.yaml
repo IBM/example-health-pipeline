@@ -72,11 +72,6 @@ spec:
         value: "false"
       - name: PATH_CONTEXT
         value: "./web"
-    env:
-      - name: DATA_SERVER
-        value: "http://analytics-dataservice-tekton-pipelines.olaph-iro5-5290c8c8e5797924dc1ad5d1b85b37c0-0001.us-east.containers.appdomain.cloud"
-      - name: MAPBOX_ACCESS_TOKEN
-        value: "pk.eyJ1IjoibWFnaWNtYXgzMiIsImEiOiJjanR0MGxubXcweHVzNDVwaWV2MGQ1ZWp3In0.8YiTJ8uuaq831eLcsjc03w"
     resources:
       inputs:
       - name: source
@@ -113,7 +108,7 @@ spec:
       - build-analytics-dataservice
     params:
     - name: ARGS
-      value: "new-app analytics-dataservice"
+      value: "new-app analytics-dataservice -e HOST_IP=analytics-dataservice-tekton-pipelines.[YOUR CLUSTER NAME AND HASH]-0001.us-east.containers.appdomain.cloud -e MONGODB=[MONGO CREDS] -e SCEME=http -e MAPBOX_ACCESS_TOKEN=[YOUR MAPBOX TOKEN] -e DATA_SOURCE_API=ol-example-health-tekton-pipelines.[YOUR CLUSTER NAME AND HASH]-0001.us-east.containers.appdomain.cloud/resources/v1/"
   - name: deploy-analytics-webapp
     taskRef:
       name: openshift-client
@@ -121,7 +116,15 @@ spec:
       - build-analytics-webapp
     params:
     - name: ARGS
-      value: "new-app analytics-webapp"
+      value: "new-app analytics-webapp -e DATA_SERVER=http://analytics-dataservice-tekton-pipelines.[YOUR CLUSTER NAME AND HASH]-0001.us-east.containers.appdomain.cloud -e MAPBOX_ACCESS_TOKEN=[YOUR MAPBOX TOKEN]"
+  - name: expose-ol-example-health
+    taskRef:
+      name: openshift-client
+    runAfter:
+      - deploy-ol
+    params:
+    - name: ARGS
+      value: "expose svc/ol-example-health"
   - name: expose-patientui
     taskRef:
       name: openshift-client
@@ -145,7 +148,7 @@ spec:
       - deploy-analytics-dataservice
     params:
     - name: ARGS
-      value: "expose svc/analytics-dataservice --port=3000 --protocol=TCP"
+      value: "expose svc/analytics-dataservice --port=3000"
   - name: expose-analytics-webapp
     taskRef:
       name: openshift-client
@@ -153,4 +156,4 @@ spec:
       - deploy-analytics-webapp
     params:
     - name: ARGS
-      value: "expose svc/analytics-webapp --port=4000 --protocol=TCP"
+      value: "expose svc/analytics-webapp --port=4000"
