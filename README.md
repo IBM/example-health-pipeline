@@ -35,7 +35,6 @@ $ oc login https://c100-e.us-east.containers.cloud.ibm.com:XXXXX --token=XXXXXXX
 ```bash
 $ kubectl apply --filename https://storage.googleapis.com/tekton-releases/previous/v0.5.2/release.yaml
 $ kubectl apply --filename https://storage.googleapis.com/tekton-releases/dashboard/previous/v0.1.1/release.yaml
-$ kubectl apply --filename https://storage.googleapis.com/tekton-releases/webhooks-extension/previous/v0.1.1/release.yaml
 ```
 
 ### 3. Create service account
