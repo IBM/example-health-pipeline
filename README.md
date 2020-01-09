@@ -62,6 +62,8 @@ $ oc create -f https://raw.githubusercontent.com/openshift/pipelines-catalog/mas
 
 Now we just need to apply a couple of files to the cluster.  The first, 'example-health-resources' defines the location of the github repositories and the names we will use for the images we create as they are stored in the registry.  As you can probably guess, the `example-health-pipeline` files defines all the steps of our pipeline: building, deploying and exposing our images.
 
+**Note**: While the Patient and Admin UI parts of the Example Health application work out-of-the-box, the Analytics section needs futher information to fully function. You need to edit `example-health-pipeline.yaml` and provide a Mapbox [access token](https://www.mapbox.com/account/access-tokens), the name of your cluster, and your hash (found in the URL of your dashboard) and Mongo datalake credentials. See the Analytics [repo](https://github.com/IBM/example-health-analytics) for more details. You also need to expose the ports in the **analytics** services to their routes once the cluster is set up.
+
 ```bash
 $ git clone https://github.com/loafyloaf/example-health-pipeline.git
 $ cd example-health-pipeline
