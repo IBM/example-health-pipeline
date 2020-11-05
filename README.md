@@ -17,7 +17,7 @@ You will also need a few CLIs, including `kubectl` and `oc`.  You can get them [
 ## Steps
 
 1. Target your cluster
-2. Install Teckton, Dashboard, and extensions
+2. Install Tekton
 3. Create service account
 4. Install Tasks
 5. Apply resources, pipeline and run
@@ -32,16 +32,22 @@ $ oc login https://c100-e.us-east.containers.cloud.ibm.com:XXXXX --token=XXXXXXX
 
 ### 2. Tekton install
 
-```bash
-$ kubectl apply --filename https://storage.googleapis.com/tekton-releases/previous/v0.5.2/release.yaml
-$ kubectl apply --filename https://storage.googleapis.com/tekton-releases/dashboard/previous/v0.1.1/release.yaml
-```
+Back in your OpenShift web console, select **Operators** -> **Operators Hub** from the navigation menu on the left of your OpenShift web console and then search for the OpenShift Pipelines Operator.
+
+![operatorhub](./images/operatorhub.png)
+
+Click on the tile and then the subsequent Install button.
+
+![pipelineoperator](./images/pipelineoperator.png)
+
+Keep the default settings on the Create Operator Subscription page and click Subscribe.
 
 ### 3. Create service account
 
 To make sure the pipeline has the appropriate permissions to store images in the local OpenShift registry, we need to create a service account.  We'll call it 'pipeline':
 
 ```bash
+$ oc new-project example-health
 $ oc create serviceaccount pipeline
 $ oc adm policy add-scc-to-user privileged -z pipeline
 $ oc adm policy add-role-to-user edit -z pipeline
@@ -52,31 +58,39 @@ $ oc adm policy add-role-to-user edit -z pipeline
 Tekton Pipelines generally are constructed of individual tasks.  We will be using a couple of tasks maintained by the both the Tekton and OpenShift communities: `openshift-client` allows you to execute CLI commands against your OpenShift cluster, and the `s2i-node` and `s2i-php` tasks are responsible for building images via OpenShift's source-to-image functionality.  To install:
 
 ```bash
-$ oc create -f https://raw.githubusercontent.com/tektoncd/catalog/master/openshift-client/openshift-client-task.yaml
-$ oc create -f https://raw.githubusercontent.com/openshift/pipelines-catalog/master/s2i-nodejs/s2i-nodejs-task.yaml
-$ oc create -f https://raw.githubusercontent.com/openshift/pipelines-catalog/master/s2i-php/s2i-php-7-task.yaml
+$ oc create -f https://raw.githubusercontent.com/tektoncd/catalog/master/task/openshift-client/0.1/openshift-client.yaml
+$ oc create -f https://raw.githubusercontent.com/openshift/pipelines-catalog/master/task/s2i-nodejs/0.1/s2i-nodejs.yaml
+$ oc create -f https://raw.githubusercontent.com/openshift/pipelines-catalog/master/task/s2i-php/0.1/s2i-php.yaml
 
 ```
 
 ### 5. Apply resources, pipeline and run
 
-Now we just need to apply a couple of files to the cluster.  The first, 'example-health-resources' defines the location of the github repositories and the names we will use for the images we create as they are stored in the registry.  As you can probably guess, the `example-health-pipeline` files defines all the steps of our pipeline: building, deploying and exposing our images.
+Now we just need to apply a couple of files to the cluster.  The first, 'example-health-resources' defines the location of the github repositories and the names we will use for the images we create as they are stored in the registry.  As you can probably guess, the `example-health-pipeline` file defines all the steps of our pipeline: building, deploying and exposing our images.
 
 **Note**: While the Patient and Admin UI parts of the Example Health application work out-of-the-box, the Analytics section needs futher information to fully function. You need to edit `example-health-pipeline.yaml` and provide a Mapbox [access token](https://www.mapbox.com/account/access-tokens), the name of your cluster, and your hash (found in the URL of your dashboard) and Mongo datalake credentials. See the Analytics [repo](https://github.com/IBM/example-health-analytics) for more details. You also need to expose the ports in the **analytics** services to their routes once the cluster is set up.
 
 ```bash
 $ git clone https://github.com/loafyloaf/example-health-pipeline.git
 $ cd example-health-pipeline
-$ kubectl apply -f example-health-resources
-$ kubectl apply -f example-health-pipeline
+$ kubectl apply -f health-pvc.yaml
+$ kubectl apply -f example-health-resources.yaml
+$ kubectl apply -f example-health-pipeline.yaml
 ```
 
-You can then use the tekton dashboard to run your pipeline by selecting the **Example Health Pipeline** from the list of pipelines and then clicking the **Create Pipeline Run** button in the upper right. 
+You can then run your pipeline by executing the command:
+```bash
+$ kubectl apply -f health-pipeline-run.yaml
+```
 
-Once created, you can follow along with the progress of your pipeline run.  Success looks similar to:
+Once created, you can follow along with the progress of your pipeline run from the list of  **Pipelines --> Pipeline Runs** in your cluster.  Success looks similar to:
 
-![success](./images/example-health-tekton-success.png)
+![success](./images/example-health-success.png)
 
-Back in your web console, you can see the URLs for your applications listed in the overview:
+In your web console, navigate to **Networking --> Routes** to see the list of URLs for your applications:
 
 ![routes](./images/example-health-routes.png)
+
+Click on the URL listed for the `patientui` to confirm installation:
+
+![patientui](./images/example-health-patientui.png)

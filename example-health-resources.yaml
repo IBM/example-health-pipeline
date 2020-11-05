@@ -7,7 +7,7 @@ spec:
   type: image
   params:
   - name: url
-    value: docker-registry.default.svc:5000/tekton-pipelines/patientui
+    value: docker-registry.default.svc:5000/example-health/patientui
 ---
 apiVersion: tekton.dev/v1alpha1
 kind: PipelineResource
@@ -27,7 +27,7 @@ spec:
   type: image
   params:
   - name: url
-    value: docker-registry.default.svc:5000/tekton-pipelines/adminui
+    value: docker-registry.default.svc:5000/example-health/adminui
 ---
 apiVersion: tekton.dev/v1alpha1
 kind: PipelineResource
@@ -57,7 +57,7 @@ spec:
   type: image
   params:
   - name: url
-    value: docker-registry.default.svc:5000/tekton-pipelines/analytics-dataservice
+    value: docker-registry.default.svc:5000/example-health/analytics-dataservice
 ---
 apiVersion: tekton.dev/v1alpha1
 kind: PipelineResource
@@ -67,4 +67,4 @@ spec:
   type: image
   params:
   - name: url
-    value: docker-registry.default.svc:5000/tekton-pipelines/analytics-webapp
+    value: docker-registry.default.svc:5000/example-health/analytics-webapp

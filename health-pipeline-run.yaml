@@ -1,0 +1,35 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  generateName: pipeline-run-
+spec:
+  pipelineRef:
+    name: example-health-pipeline
+  resources:
+  - name: patientui-git
+    resourceRef:
+      name: patientui-git
+  - name: patientui-image
+    resourceRef:
+      name: patientui-image
+  - name: adminui-image
+    resourceRef:
+      name: adminui-image
+  - name: adminui-git
+    resourceRef:
+      name: adminui-git
+  - name: analytics-git
+    resourceRef:
+      name: analytics-git
+  - name: analytics-dataservice-image
+    resourceRef:
+      name: analytics-dataservice-image
+  - name: analytics-webapp-image
+    resourceRef:
+      name: analytics-webapp-image
+  serviceAccountName: pipeline
+  workspaces:
+  - name: shared-workspace
+    persistentVolumeClaim:
+      claimName: health-pvc
