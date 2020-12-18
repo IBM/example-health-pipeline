@@ -1,8 +1,10 @@
-apiVersion: tekton.dev/v1alpha1
+apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
   name: example-health-pipeline
 spec:
+  workspaces:
+    - name: shared-workspace
   resources:
   - name: patientui-git
     type: git
@@ -19,66 +21,112 @@ spec:
   - name: analytics-webapp-image
     type: image
   tasks:
+  - name: fetch-patientui
+    taskRef:
+      name: git-clone
+      kind: ClusterTask
+    workspaces:
+      - name: output
+        workspace: shared-workspace
+    params:
+      - name: url
+        value: https://github.com/IBM/node-s2i-openshift
+      - name: subdirectory
+        value: ""
+      - name: deleteExisting
+        value: "true"
   - name: build-patientui
     taskRef:
       name: s2i-nodejs
+    runAfter:
+      - fetch-patientui
     params:
       - name: TLSVERIFY
         value: "false"
       - name: PATH_CONTEXT
         value: "./site"
-    resources:
-      inputs:
+      - name: IMAGE
+        value: image-registry.openshift-image-registry.svc:5000/example-health/patientui
+    workspaces:
       - name: source
-        resource: patientui-git
-      outputs:
-      - name: image
-        resource: patientui-image
+        workspace: shared-workspace
+  - name: fetch-adminui
+    taskRef:
+      name: git-clone
+      kind: ClusterTask
+    runAfter:
+      - fetch-patientui
+    workspaces:
+      - name: output
+        workspace: shared-workspace
+    params:
+      - name: url
+        value: https://github.com/IBM/php-s2i-openshift
+      - name: subdirectory
+        value: ""
+      - name: deleteExisting
+        value: "true"
   - name: build-adminui
     taskRef:
       name: s2i-php
+    runAfter:
+      - fetch-adminui
     params:
       - name: TLSVERIFY
         value: "false"
       - name: PATH_CONTEXT
         value: "./src"
-    resources:
-      inputs:
+      - name: IMAGE
+        value: image-registry.openshift-image-registry.svc:5000/example-health/adminui
+    workspaces:
       - name: source
-        resource: adminui-git
-      outputs:
-      - name: image
-        resource: adminui-image
+        workspace: shared-workspace
+  - name: fetch-analytics
+    taskRef:
+      name: git-clone
+      kind: ClusterTask
+    runAfter:
+      - fetch-adminui
+    workspaces:
+      - name: output
+        workspace: shared-workspace
+    params:
+      - name: url
+        value: https://github.com/IBM/example-health-analytics
+      - name: subdirectory
+        value: ""
+      - name: deleteExisting
+        value: "true"
   - name: build-analytics-dataservice
     taskRef:
       name: s2i-nodejs
+    runAfter:
+      - fetch-analytics
     params:
       - name: TLSVERIFY
         value: "false"
       - name: PATH_CONTEXT
         value: "./data-service"
-    resources:
-      inputs:
+      - name: IMAGE
+        value: image-registry.openshift-image-registry.svc:5000/example-health/analytics-dataservice
+    workspaces:
       - name: source
-        resource: analytics-git
-      outputs:
-      - name: image
-        resource: analytics-dataservice-image
+        workspace: shared-workspace
   - name: build-analytics-webapp
     taskRef:
       name: s2i-nodejs
+    runAfter:
+      - fetch-analytics
     params:
       - name: TLSVERIFY
         value: "false"
       - name: PATH_CONTEXT
         value: "./web"
-    resources:
-      inputs:
+      - name: IMAGE
+        value: image-registry.openshift-image-registry.svc:5000/example-health/analytics-webapp
+    workspaces:
       - name: source
-        resource: analytics-git
-      outputs:
-      - name: image
-        resource: analytics-webapp-image
+        workspace: shared-workspace
   - name: deploy-patientui
     taskRef:
       name: openshift-client
@@ -86,13 +134,17 @@ spec:
       - build-patientui
     params:
     - name: ARGS
-      value: "new-app patientui"
+      value:
+        - "new-app"
+        - "patientui"
   - name: deploy-ol
     taskRef:
       name: openshift-client
     params:
     - name: ARGS
-      value: "new-app ykoyfman/ol-example-health"
+      value:
+        - "new-app"
+        - "ykoyfman/ol-example-health"
   - name: deploy-adminui
     taskRef:
       name: openshift-client
@@ -100,7 +152,9 @@ spec:
       - build-adminui
     params:
     - name: ARGS
-      value: "new-app adminui"
+      value:
+        - "new-app"
+        - "adminui"
   - name: deploy-analytics-dataservice
     taskRef:
       name: openshift-client
@@ -108,7 +162,19 @@ spec:
       - build-analytics-dataservice
     params:
     - name: ARGS
-      value: "new-app analytics-dataservice -e HOST_IP=analytics-dataservice-tekton-pipelines.[YOUR CLUSTER NAME AND HASH]-0001.us-east.containers.appdomain.cloud -e MONGODB=[MONGO CREDS] -e SCEME=http -e MAPBOX_ACCESS_TOKEN=[YOUR MAPBOX TOKEN] -e DATA_SOURCE_API=ol-example-health-tekton-pipelines.[YOUR CLUSTER NAME AND HASH]-0001.us-east.containers.appdomain.cloud/resources/v1/"
+      value:
+        - "new-app"
+        - "analytics-dataservice"
+        - "-e"
+        - "HOST_IP=analytics-dataservice-tekton-pipelines.[YOUR_CLUSTER_NAME_AND_HASH]-0001.us-east.containers.appdomain.cloud"
+        - "-e"
+        - "MONGODB=[MONGO_CREDS]"
+        - "-e"
+        - "SCEME=http"
+        - "-e"
+        - "MAPBOX_ACCESS_TOKEN=[YOUR_MAPBOX_TOKEN]"
+        - "-e"
+        - "DATA_SOURCE_API=ol-example-health-tekton-pipelines.[YOUR_CLUSTER_NAME_AND_HASH]-0001.us-east.containers.appdomain.cloud/resources/v1/"
   - name: deploy-analytics-webapp
     taskRef:
       name: openshift-client
@@ -116,7 +182,13 @@ spec:
       - build-analytics-webapp
     params:
     - name: ARGS
-      value: "new-app analytics-webapp -e DATA_SERVER=http://analytics-dataservice-tekton-pipelines.[YOUR CLUSTER NAME AND HASH]-0001.us-east.containers.appdomain.cloud -e MAPBOX_ACCESS_TOKEN=[YOUR MAPBOX TOKEN]"
+      value:
+        - "new-app"
+        - "analytics-webapp"
+        - "-e"
+        - "DATA_SERVER=http://analytics-dataservice-tekton-pipelines.[YOUR_CLUSTER_NAME_AND_HASH]-0001.us-east.containers.appdomain.cloud"
+        - "-e"
+        - "MAPBOX_ACCESS_TOKEN=[YOUR_MAPBOX_TOKEN]"
   - name: expose-ol-example-health
     taskRef:
       name: openshift-client
@@ -124,7 +196,9 @@ spec:
       - deploy-ol
     params:
     - name: ARGS
-      value: "expose svc/ol-example-health"
+      value:
+        - "expose"
+        - "svc/ol-example-health"
   - name: expose-patientui
     taskRef:
       name: openshift-client
@@ -132,7 +206,9 @@ spec:
       - deploy-patientui
     params:
     - name: ARGS
-      value: "expose svc/patientui"
+      value:
+        - "expose"
+        - " svc/patientui"
   - name: expose-adminui
     taskRef:
       name: openshift-client
@@ -140,7 +216,9 @@ spec:
       - deploy-adminui
     params:
     - name: ARGS
-      value: "expose svc/adminui"
+      value:
+        - "expose"
+        - "svc/adminui"
   - name: expose-analytics-dataservice
     taskRef:
       name: openshift-client
@@ -148,7 +226,10 @@ spec:
       - deploy-analytics-dataservice
     params:
     - name: ARGS
-      value: "expose svc/analytics-dataservice --port=3000"
+      value:
+        - "expose"
+        - "svc/analytics-dataservice"
+        - "--port=3000"
   - name: expose-analytics-webapp
     taskRef:
       name: openshift-client
@@ -156,4 +237,7 @@ spec:
       - deploy-analytics-webapp
     params:
     - name: ARGS
-      value: "expose svc/analytics-webapp --port=4000"
+      value:
+        - "expose"
+        - "svc/analytics-webapp"
+        - "--port=4000"
