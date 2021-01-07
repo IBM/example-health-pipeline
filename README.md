@@ -87,6 +87,8 @@ Once created, you can follow along with the progress of your pipeline run from t
 
 ![success](./images/example-health-success.png)
 
+# Sample output
+
 In your web console, navigate to **Networking --> Routes** to see the list of URLs for your applications:
 
 ![routes](./images/example-health-routes.png)
