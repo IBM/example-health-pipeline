@@ -58,6 +58,8 @@ $ oc adm policy add-role-to-user edit -z pipeline
 Tekton Pipelines generally are constructed of individual tasks.  We will be using a couple of tasks maintained by the both the Tekton and OpenShift communities: `openshift-client` allows you to execute CLI commands against your OpenShift cluster, and the `s2i-node` and `s2i-php` tasks are responsible for building images via OpenShift's source-to-image functionality.  To install:
 
 ```bash
+$ git clone https://github.com/loafyloaf/example-health-pipeline.git
+$ cd example-health-pipeline
 $ oc create -f openshift-client.yaml
 $ oc create -f s2i-nodejs.yaml
 $ oc create -f s2i-php.yaml
@@ -71,8 +73,6 @@ Now we just need to apply a couple of files to the cluster.  The first, 'example
 **Note**: While the Patient and Admin UI parts of the Example Health application work out-of-the-box, the Analytics section needs futher information to fully function. You need to edit `example-health-pipeline.yaml` and provide a Mapbox [access token](https://www.mapbox.com/account/access-tokens), the name of your cluster, and your hash (found in the URL of your dashboard) and Mongo datalake credentials. See the Analytics [repo](https://github.com/IBM/example-health-analytics) for more details. You also need to expose the ports in the **analytics** services to their routes once the cluster is set up.
 
 ```bash
-$ git clone https://github.com/loafyloaf/example-health-pipeline.git
-$ cd example-health-pipeline
 $ oc apply -f health-pvc.yaml
 $ oc apply -f example-health-resources.yaml
 $ oc apply -f example-health-pipeline.yaml
